@@ -5,6 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProfiles } from "../store/profileSlice";
 import { fetchEventsForProfile, clearEvents } from "../store/eventSlice";
 import type { RootState, AppDispatch } from "../store";
+import EventEditModal from "./EventEditModal";
+import EventLogs from "./EventLogs";
+
+// ✅ IMPORT MODALS
 
 export default function EventList() {
   const dispatch = useDispatch<AppDispatch>();
@@ -15,6 +19,10 @@ export default function EventList() {
 
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [timezone, setTimezone] = useState("UTC");
+
+  // ✅ NEW STATE
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [showLogs, setShowLogs] = useState(false);
 
   useEffect(() => {
     dispatch(fetchProfiles());
@@ -76,9 +84,53 @@ export default function EventList() {
                 <strong>End:</strong> {new Date(event.end).toLocaleString()}
               </p>
             </div>
+
+            {/* ✅ EDIT & LOG BUTTONS */}
+            <div className="flex gap-3 mt-3">
+              <button
+                className="text-sm px-3 py-1 bg-yellow-600 hover:bg-yellow-700 rounded"
+                onClick={() => {
+                  setSelectedEvent(event);
+                  setShowLogs(false);
+                }}
+              >
+                Edit
+              </button>
+
+              {/* <button
+                className="text-sm px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded"
+                onClick={() => {
+                  setSelectedEvent(event);
+                  setShowLogs(true);
+                }}
+              >
+                Logs
+              </button> */}
+            </div>
           </li>
         ))}
       </ul>
+
+      {/* ✅ EDIT MODAL */}
+      {selectedEvent && !showLogs && (
+        <EventEditModal
+          event={selectedEvent}
+          profileId={selectedProfileId}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
+
+      {/* ✅ LOGS MODAL */}
+      {showLogs && selectedEvent && (
+        <EventLogs
+          eventId={selectedEvent._id}
+          timezone={timezone}
+          onClose={() => {
+            setShowLogs(false);
+            setSelectedEvent(null);
+          }}
+        />
+      )}
     </div>
   );
 }

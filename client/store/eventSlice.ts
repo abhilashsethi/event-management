@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import api from "../services/api";
 
-/* ---------- Types ---------- */
 export interface Event {
   _id: string;
   title: string;
@@ -13,22 +12,35 @@ export interface Event {
   createdAt: string;
   updatedAt: string;
 }
+export interface EventLog {
+  _id: string;
+  changes: {
+    field: string;
+    oldValue: any;
+    newValue: any;
+  }[];
+  createdAt: string;
+}
 
 interface EventsState {
   items: Event[];
   loading: boolean;
   error: string | null;
+
+  logs: EventLog[];
+  logsLoading: boolean;
 }
 
 const initialState: EventsState = {
   items: [],
   loading: false,
   error: null,
+
+  logs: [],
+  logsLoading: false,
 };
 
-/* ---------- Async Thunks ---------- */
 
-// GET /api/events?profileId=...&timezone=...
 export const fetchEventsForProfile = createAsyncThunk(
   "events/fetchForProfile",
   async (params: { profileId: string; timezone: string }) => {
@@ -101,6 +113,35 @@ const eventSlice = createSlice({
       });
   },
 });
+
+// PUT /api/events/:id
+export const updateEvent = createAsyncThunk(
+  "events/update",
+  async (data: {
+    eventId: string;
+    payload: {
+      title?: string;
+      startDateTime?: string;
+      endDateTime?: string;
+      updatedByProfileId: string;
+    };
+  }) => {
+    const res = await api.put(`/events/${data.eventId}`, data.payload);
+    return res.data;
+  }
+);
+
+// GET /api/events/:id/logs
+export const fetchEventLogs = createAsyncThunk(
+  "events/logs",
+  async (params: { eventId: string; timezone: string }) => {
+    const res = await api.get(`/events/${params.eventId}/logs`, {
+      params: { timezone: params.timezone },
+    });
+    return res.data;
+  }
+);
+
 
 export const { clearEvents } = eventSlice.actions;
 export default eventSlice.reducer;
