@@ -5,10 +5,6 @@ import EventUpdateLog from "../models/eventLog.model.js";
 import mongoose from "mongoose";
 
 
-/**
- * POST /api/events
- * Create event for one or multiple profiles
- */
 export const createEvent = async (req, res) => {
   try {
     const {
@@ -20,23 +16,19 @@ export const createEvent = async (req, res) => {
       endDateTime,
     } = req.body;
 
-    // ✅ Basic validation
     if (!title || !profileIds?.length || !timezone || !startDateTime || !endDateTime) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // ✅ Convert start/end from event timezone → UTC
     const startUTC = toUTC(startDateTime, timezone);
     const endUTC = toUTC(endDateTime, timezone);
 
-    // ✅ End must be after start
     if (endUTC <= startUTC) {
       return res.status(400).json({
         message: "End date/time must be after start date/time",
       });
     }
 
-    // ✅ Ensure profiles exist
     const profiles = await Profile.find({ _id: { $in: profileIds } });
     if (profiles.length !== profileIds.length) {
       return res.status(400).json({ message: "One or more profiles not found" });
@@ -57,10 +49,7 @@ export const createEvent = async (req, res) => {
   }
 };
 
-/**
- * GET /api/events?profileId=...&timezone=...
- * Get events for a profile converted to user's timezone
- */
+
 export const getEventsForProfile = async (req, res) => {
   try {
     const { profileId, timezone } = req.query;
@@ -114,7 +103,6 @@ export const updateEvent = async (req, res) => {
 
     const changes = [];
 
-    // ✅ Track field changes
     if (title && title !== event.title) {
       changes.push({ field: "title", oldValue: event.title, newValue: title });
       event.title = title;
@@ -147,7 +135,6 @@ export const updateEvent = async (req, res) => {
       event.profileIds = profileIds;
     }
 
-    // ✅ Time updates (timezone-aware)
     if (startDateTime) {
       const newStartUTC = toUTC(startDateTime, event.timezone);
       if (newStartUTC.getTime() !== event.start.getTime()) {
@@ -169,14 +156,12 @@ export const updateEvent = async (req, res) => {
       }
     }
 
-    // ✅ Save only if something changed
     if (changes.length === 0) {
       return res.status(400).json({ message: "No changes detected" });
     }
 
     await event.save();
 
-    // ✅ Create update log
     await EventUpdateLog.create({
       eventId: event._id,
       changedByProfileId: updatedByProfileId,
