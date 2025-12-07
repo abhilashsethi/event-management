@@ -1,16 +1,16 @@
 import express from "express";
+import {
+  createEvent,
+  getEventLogs,
+  getEventsForProfile,
+  updateEvent,
+} from "../controllers/event.controller.js";
+
 const router = express.Router();
 
-router.post("/", (req, res) => {
-  res.send("Create event");
-});
-
-router.get("/", (req, res) => {
-  res.send("List events");
-});
-
-router.put("/:id", (req, res) => {
-  res.send("Update event");
-});
+router.post("/", createEvent);
+router.get("/", getEventsForProfile);
+router.put("/:id", updateEvent);
+router.get("/:id/logs", getEventLogs);
 
 export default router;
