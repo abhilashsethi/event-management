@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import api from "../services/api";
 
-/* ---------- Types ---------- */
 export interface Profile {
   _id: string;
   name: string;
@@ -16,14 +15,12 @@ interface ProfilesState {
   error: string | null;
 }
 
-/* ---------- Initial State ---------- */
 const initialState: ProfilesState = {
   items: [],
   loading: false,
   error: null,
 };
 
-/* ---------- Async Thunks ---------- */
 
 // GET /api/profiles
 export const fetchProfiles = createAsyncThunk(
@@ -43,7 +40,6 @@ export const createProfile = createAsyncThunk(
   }
 );
 
-/* ---------- Slice ---------- */
 const profileSlice = createSlice({
   name: "profiles",
   initialState,
